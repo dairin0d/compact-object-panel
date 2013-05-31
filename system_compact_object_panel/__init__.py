@@ -25,8 +25,10 @@ bl_info = {
     "blender": (2, 67, 0),
     "location": "Object properties panel",
     "warning": "",
-    "wiki_url": "",
-    "tracker_url": "",
+    "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.6/Py/"\
+        "Scripts/System/Compact_Object_Panel",
+    "tracker_url": "http://projects.blender.org/tracker/"\
+        "index.php?func=detail&aid=35589",
     "category": "System"}
 #============================================================================#
 
