@@ -136,7 +136,7 @@ class INFO_OT_messagebox(bpy.types.Operator):
         
         icon = self.icon
         for line in self.lines:
-            col.label(line, icon)
+            col.label(text=line, icon=icon)
             icon = 'NONE'
 
 #bpy.utils.register_class(INFO_OT_messagebox) # REGISTER
