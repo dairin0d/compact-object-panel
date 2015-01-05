@@ -15,7 +15,7 @@
 #
 #  ***** END GPL LICENSE BLOCK *****
 
-# <pep8-80 compliant>
+# <pep8 compliant>
 
 bl_info = {
     "name": "Compact Object panel",
@@ -40,9 +40,16 @@ from rna_prop_ui import PropertyPanel, rna_idprop_context_value
 
 import bl_ui
 
-#from ui_utils import NestedLayout
-from . import ui_utils
-NestedLayout = ui_utils.NestedLayout
+try:
+    import dairin0d
+    dairin0d_location = ""
+except ImportError:
+    dairin0d_location = "."
+
+exec("""
+from {0}dairin0d.utils_ui import NestedLayout
+""".format(dairin0d_location))
+
 
 class ObjectButtonsPanel():
     bl_space_type = 'PROPERTIES'
@@ -65,19 +72,9 @@ class OBJECT_PT_context_object(ObjectButtonsPanel, Panel):
     bl_label = ""
     bl_options = {'HIDE_HEADER'}
     
-    draw_type_icons = {
-        'BOUNDS':'BBOX',
-        'WIRE':'WIRE',
-        'SOLID':'SOLID',
-        'TEXTURED':'POTATO',
-    }
+    draw_type_icons = {'BOUNDS':'BBOX', 'WIRE':'WIRE', 'SOLID':'SOLID', 'TEXTURED':'POTATO'}
     
-    bounds_icons = {
-        'BOX':'MESH_CUBE',
-        'SPHERE':'MATSPHERE',
-        'CYLINDER':'MESH_CYLINDER',
-        'CONE':'MESH_CONE',
-    }
+    bounds_icons = {'BOX':'MESH_CUBE', 'SPHERE':'MATSPHERE', 'CYLINDER':'MESH_CYLINDER', 'CONE':'MESH_CONE'}
     
     def draw(self, context):
         layout = NestedLayout(self.layout, self.bl_idname)
@@ -89,8 +86,7 @@ class OBJECT_PT_context_object(ObjectButtonsPanel, Panel):
             else:
                 layout.template_ID(context.scene.objects, "active")
             
-            layout.menu("OBJECT_MT_context_object_extra_settings",
-                        icon='SCRIPTPLUGINS', text="")
+            layout.menu("OBJECT_MT_context_object_extra_settings", icon='SCRIPTPLUGINS', text="")
         
         ob = context.object
         
@@ -102,26 +98,20 @@ class OBJECT_PT_context_object(ObjectButtonsPanel, Panel):
         with layout.row(True):
             with layout.column(True):
                 with layout.row(True):
-                    layout.prop(ob, "show_texture_space", text="",
-                        icon='FACESEL_HLT')
+                    layout.prop(ob, "show_texture_space", text="", icon='FACESEL_HLT')
                     layout.prop(ob, "show_name", text="", icon='SORTALPHA')
                     layout.prop(ob, "show_wire", text="", icon='WIRE')
                     with layout.split():
-                        layout.prop(ob, "draw_type", text="",
-                            icon=self.draw_type_icons[ob.draw_type])
+                        layout.prop(ob, "draw_type", text="", icon=self.draw_type_icons[ob.draw_type])
                         with layout.split():
-                            layout.prop(ob, "show_all_edges", text="",
-                                icon='MESH_GRID')
-                            layout.prop(ob, "show_x_ray", text="",
-                                icon='RADIO')
+                            layout.prop(ob, "show_all_edges", text="", icon='MESH_GRID')
+                            layout.prop(ob, "show_x_ray", text="", icon='RADIO')
                 with layout.row(True):
-                    layout.prop(ob, "show_transparent", text="",
-                        icon='IMAGE_RGB_ALPHA')
+                    layout.prop(ob, "show_transparent", text="", icon='IMAGE_RGB_ALPHA')
                     layout.prop(ob, "show_axis", text="", icon='MANIPUL')
                     layout.prop(ob, "show_bounds", text="", icon='BBOX')
                     with layout.split():
-                        layout.prop(ob, "draw_bounds_type", text="",
-                            icon=self.bounds_icons[ob.draw_bounds_type])
+                        layout.prop(ob, "draw_bounds_type", text="", icon=self.bounds_icons[ob.draw_bounds_type])
                         layout.prop(ob, "color", text="")
 
 class OBJECT_PT_transform(ObjectButtonsPanel, Panel):
@@ -155,15 +145,12 @@ class OBJECT_PT_transform(ObjectButtonsPanel, Panel):
                 labels = ["X", "Y", "Z"]
                 with layout.column(True):
                     for i in range(3):
-                        layout.prop(ob, "location",
-                            text=labels[i], index=i)
+                        layout.prop(ob, "location", text=labels[i], index=i)
                 with layout.column(True):
                     for i in range(3):
                         with layout.row(True):
-                            layout.prop(ob, "lock_location",
-                                text="", index=i)
-                            layout.prop(ob, "delta_location",
-                                text=delta+labels[i], index=i)
+                            layout.prop(ob, "lock_location", text="", index=i)
+                            layout.prop(ob, "delta_location", text=delta+labels[i], index=i)
         
         # ===== ROTATION ===== #
         with layout.row()["main"]:
@@ -185,13 +172,11 @@ class OBJECT_PT_transform(ObjectButtonsPanel, Panel):
                 if layout.folded: layout.exit("main")
                 with layout.column(True):
                     for i in range(n):
-                        layout.prop(ob, "rotation_"+rname,
-                            text=labels[i], index=i)
+                        layout.prop(ob, "rotation_"+rname, text=labels[i], index=i)
             
             with layout.column():
                 with layout.row(True):
-                    layout.row(True)(scale_x=0.1, active=rot_aa).prop(ob,
-                        "lock_rotations_4d", text="4L", toggle=True)
+                    layout.row(True)(scale_x=0.1, active=rot_aa).prop(ob, "lock_rotations_4d", text="4L", toggle=True)
                     layout.row(True).prop(ob, "rotation_mode", text="")
                 
                 with layout.column(True):
@@ -199,15 +184,11 @@ class OBJECT_PT_transform(ObjectButtonsPanel, Panel):
                         with layout.row(True):
                             j = (i if n != 4 else i - 1)
                             if j != -1:
-                                layout.prop(ob, "lock_rotation",
-                                    text="", index=j)
+                                layout.prop(ob, "lock_rotation", text="", index=j)
                             else:
                                 cond = rot_aa and ob.lock_rotations_4d
-                                layout.row(True)(active=cond).prop(ob,
-                                    "lock_rotation_w", text="")
-                            layout.row(True)(enabled=not rot_aa).prop(ob,
-                                "delta_rotation_"+drname,
-                                text=delta+labels[i], index=i)
+                                layout.row(True)(active=cond).prop(ob, "lock_rotation_w", text="")
+                            layout.row(True)(enabled=not rot_aa).prop(ob, "delta_rotation_"+drname, text=delta+labels[i], index=i)
         
         # ===== SCALE ===== #
         with layout.fold("Scale:"):
@@ -216,15 +197,12 @@ class OBJECT_PT_transform(ObjectButtonsPanel, Panel):
                 labels = ["X", "Y", "Z"]
                 with layout.column(True):
                     for i in range(3):
-                        layout.prop(ob, "scale",
-                            text=labels[i], index=i)
+                        layout.prop(ob, "scale", text=labels[i], index=i)
                 with layout.column(True):
                     for i in range(3):
                         with layout.row(True):
-                            layout.prop(ob, "lock_scale",
-                                text="", index=i)
-                            layout.prop(ob, "delta_scale",
-                                text=delta+labels[i], index=i)
+                            layout.prop(ob, "lock_scale", text="", index=i)
+                            layout.prop(ob, "delta_scale", text=delta+labels[i], index=i)
         
         # ===== PARENT ===== #
         parent = ob.parent
@@ -236,13 +214,10 @@ class OBJECT_PT_transform(ObjectButtonsPanel, Panel):
             with layout.split():
                 with layout.fold("Parent", "row"):
                     if layout.folded: layout.exit("main")
-                    layout.prop_menu_enum(ob, "parent_type", text="",
-                        icon=self.parent_icons[ob.parent_type])
+                    layout.prop_menu_enum(ob, "parent_type", text="", icon=self.parent_icons[ob.parent_type])
                 
                 with layout.row(True):
-                    layout.prop(ob, "use_slow_parent", toggle=True, text="",
-                        icon=('CHECKBOX_HLT' if ob.use_slow_parent
-                            else 'CHECKBOX_DEHLT'))
+                    layout.prop(ob, "use_slow_parent", toggle=True, text="", icon=('CHECKBOX_HLT' if ob.use_slow_parent else 'CHECKBOX_DEHLT'))
                     with layout.row(True)(active=is_slow):
                         layout.prop(ob, "slow_parent_offset", text="Slow")
             
@@ -250,8 +225,7 @@ class OBJECT_PT_transform(ObjectButtonsPanel, Panel):
                 layout.prop(ob, "parent", text="")
                 with layout.row(True)(active=is_bone):
                     if is_bone:
-                        layout.prop_search(ob, "parent_bone",
-                            parent.data, "bones", text="")
+                        layout.prop_search(ob, "parent_bone", parent.data, "bones", text="")
                     else:
                         layout.prop(ob, "parent_bone", text="")
         # ===== END PARENT ===== #
@@ -280,8 +254,7 @@ class OBJECT_PT_groups(ObjectButtonsPanel, Panel):
                 with layout.box():
                     with layout.row():
                         layout.prop(group, "name", text="")
-                        layout.operator("object.group_remove",
-                            text="", icon='X', emboss=False)
+                        layout.operator("object.group_remove", text="", icon='X', emboss=False)
                 
                 with layout.box():
                     with layout.split():
@@ -290,8 +263,7 @@ class OBJECT_PT_groups(ObjectButtonsPanel, Panel):
                                 layout.label("Dupli Visibility:")
                             with layout.column()(scale_y=0.6):
                                 layout.prop(group, "layers", text="")
-                            layout.operator("object.dupli_offset_from_cursor",
-                                text="From Cursor").group = index
+                            layout.operator("object.dupli_offset_from_cursor", text="From Cursor").group = index
                         with layout.column():
                             layout.prop(group, "dupli_offset", text="")
 
@@ -315,28 +287,24 @@ class OBJECT_PT_duplication(ObjectButtonsPanel, Panel):
                     layout.prop(ob, "dupli_frames_off", text="Off")
             with layout.split(0.5):
                 with layout.row():
-                    layout.prop(ob, "use_dupli_frames_speed",
-                        text="Speed", toggle=True)
+                    layout.prop(ob, "use_dupli_frames_speed", text="Speed", toggle=True)
                     with layout.row()(scale_x=0.7, alignment='RIGHT'):
                         layout.label("Axes:")
                 with layout.row(True):
                     layout.prop(ob, "track_axis", text="")
                     layout.prop(ob, "up_axis", text="")
         elif ob.dupli_type == 'VERTS':
-            layout.prop(ob, "use_dupli_vertices_rotation",
-                text="Align to normals")
+            layout.prop(ob, "use_dupli_vertices_rotation", text="Align to normals")
         elif ob.dupli_type == 'FACES':
             with layout.row(True):
                 use_scale = ob.use_dupli_faces_scale
-                layout.prop(ob, "use_dupli_faces_scale", text="",
-                    icon=('CHECKBOX_HLT' if use_scale else 'CHECKBOX_DEHLT'))
+                layout.prop(ob, "use_dupli_faces_scale", text="", icon=('CHECKBOX_HLT' if use_scale else 'CHECKBOX_DEHLT'))
                 with layout.row(True)(active=use_scale):
                     layout.prop(ob, "dupli_faces_scale", text="Inherit Scale")
         elif ob.dupli_type == 'GROUP':
             layout.prop(ob, "dupli_group", text="Group")
 
-from bl_ui.properties_animviz import (MotionPathButtonsPanel,
-                                      OnionSkinButtonsPanel)
+from bl_ui.properties_animviz import MotionPathButtonsPanel, OnionSkinButtonsPanel
 
 class OBJECT_PT_motion_paths(MotionPathButtonsPanel, Panel):
     #bl_label = "Object Motion Paths"
@@ -369,22 +337,17 @@ class OBJECT_PT_motion_paths(MotionPathButtonsPanel, Panel):
                     icon = ('BONE_DATA' if bones else 'OBJECT_DATA')
                     ctg = ("pose" if bones else "object") # operator category
                     if mpath:
-                        text = "%s-%s (cached)" % (mpath.frame_start,
-                                                   mpath.frame_end)
+                        text = "%s-%s (cached)" % (mpath.frame_start, mpath.frame_end)
                         '''
                         layout.label(text, icon)
                         
-                        layout.operator(ctg + ".paths_update",
-                            text="", icon='FILE_REFRESH')
+                        layout.operator(ctg + ".paths_update", text="", icon='FILE_REFRESH')
                         '''
-                        layout.operator(ctg + ".paths_update",
-                            text=" "+text, icon='FILE_REFRESH')
+                        layout.operator(ctg + ".paths_update", text=" "+text, icon='FILE_REFRESH')
                         
-                        layout.operator(ctg + ".paths_clear",
-                            text="", icon='X')
+                        layout.operator(ctg + ".paths_clear", text="", icon='X')
                     else:
-                        layout.operator(ctg + ".paths_calculate",
-                            text="Cache", icon=icon)
+                        layout.operator(ctg + ".paths_calculate", text="Cache", icon=icon)
                 
                 with layout.column(True):
                     if (mps.type == 'CURRENT_FRAME'):
@@ -410,23 +373,14 @@ class OBJECT_PT_motion_paths(MotionPathButtonsPanel, Panel):
                 align = 'EXPAND'#'LEFT'
                 layout.label(text="Show:")
                 with layout.row()(alignment=align):
-                    layout.prop(mps, "show_frame_numbers",
-                        text="Frame Numbers", toggle=toggle, emboss=emboss,
-                        icon=icon(mps.show_frame_numbers))
+                    layout.prop(mps, "show_frame_numbers", text="Frame Numbers", toggle=toggle, emboss=emboss, icon=icon(mps.show_frame_numbers))
                 with layout.row()(alignment=align):
-                    layout.prop(mps, "show_keyframe_numbers",
-                        text="Keyframe Numbers", toggle=toggle, emboss=emboss,
-                        icon=icon(mps.show_keyframe_numbers))
+                    layout.prop(mps, "show_keyframe_numbers", text="Keyframe Numbers", toggle=toggle, emboss=emboss, icon=icon(mps.show_keyframe_numbers))
                 with layout.row()(alignment=align):
-                    layout.prop(mps, "show_keyframe_highlight",
-                        text="Keyframes", toggle=toggle, emboss=emboss,
-                        icon=icon(mps.show_keyframe_highlight))
+                    layout.prop(mps, "show_keyframe_highlight", text="Keyframes", toggle=toggle, emboss=emboss, icon=icon(mps.show_keyframe_highlight))
                 if bones:
                     with layout.row()(alignment=align):
-                        layout.prop(mps, "show_keyframe_action_all",
-                            text="+ Non-Grouped Keyframes",
-                            toggle=toggle, emboss=emboss,
-                            icon=icon(mps.show_keyframe_action_all))
+                        layout.prop(mps, "show_keyframe_action_all", text="+ Non-Grouped Keyframes", toggle=toggle, emboss=emboss, icon=icon(mps.show_keyframe_action_all))
 
 # inherit from panel when ready
 class OBJECT_PT_onion_skinning(OnionSkinButtonsPanel): # , Panel):
@@ -462,8 +416,7 @@ class OBJECT_PT_custom_props(ObjectButtonsPanel, PropertyPanel, Panel):
             except:
                 pass
         
-        rna_item, context_member = rna_idprop_context_value(context,
-                                        context_member, property_type)
+        rna_item, context_member = rna_idprop_context_value(context, context_member, property_type)
         
         # poll should really get this...
         if not rna_item:
@@ -482,9 +435,7 @@ class OBJECT_PT_custom_props(ObjectButtonsPanel, PropertyPanel, Panel):
                 props = layout.operator("wm.properties_add", text="Add")
                 props.data_path = context_member
         
-        rna_properties = {prop.identifier
-                          for prop in rna_item.bl_rna.properties
-                          if prop.is_runtime} if items else None
+        rna_properties = {prop.identifier for prop in rna_item.bl_rna.properties if prop.is_runtime} if items else None
         
         with layout.column(True):
             for key, val in items:
@@ -512,8 +463,7 @@ class OBJECT_PT_custom_props(ObjectButtonsPanel, PropertyPanel, Panel):
                     
                     if to_dict or to_list:
                         if use_edit:
-                            props = layout.operator("wm.properties_edit",
-                                                    text=val_draw)
+                            props = layout.operator("wm.properties_edit", text=val_draw)
                             assign_props(props, val_draw, key)
                         else:
                             layout.label(text=val_draw)
@@ -524,15 +474,13 @@ class OBJECT_PT_custom_props(ObjectButtonsPanel, PropertyPanel, Panel):
                             layout.prop(rna_item, '["%s"]' % key, text="")
                     
                     if use_edit:
-                        props = layout.operator("wm.properties_remove",
-                                                text="", icon='ZOOMOUT')
+                        props = layout.operator("wm.properties_remove", text="", icon='ZOOMOUT')
                         assign_props(props, val_draw, key)
 
 # ========================================================= #
 
 def reregister_module(module, register):
-    reregister = (bpy.utils.register_class if register
-                  else bpy.utils.unregister_class)
+    reregister = (bpy.utils.register_class if register else bpy.utils.unregister_class)
     
     Panel = bpy.types.Panel
     
@@ -560,13 +508,9 @@ def reregister_module(module, register):
 def register():
     reregister_module(bl_ui.properties_object, False)
     
-    ui_utils.register()
-    
     bpy.utils.register_module(__name__)
 
 def unregister():
-    ui_utils.unregister()
-    
     bpy.utils.unregister_module(__name__)
     
     reregister_module(bl_ui.properties_object, True)
